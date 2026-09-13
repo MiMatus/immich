@@ -7,9 +7,11 @@ import { ImmichFooter } from 'src/emails/components/footer.template.js';
 interface ImmichLayoutProps {
   children: React.ReactNode;
   preview: string;
+  /** Public URL of this instance; the logo is served from the web bundle. */
+  baseUrl?: string;
 }
 
-export const ImmichLayout = ({ children, preview }: ImmichLayoutProps) => (
+export const ImmichLayout = ({ children, preview, baseUrl = 'https://pixelary.com' }: ImmichLayoutProps) => (
   <Html>
     <Tailwind
       config={{
@@ -50,9 +52,9 @@ export const ImmichLayout = ({ children, preview }: ImmichLayoutProps) => (
           <Section className="my-6 p-12 border border-red-400 rounded-[50px] bg-gray-50">
             <Section className="flex justify-center mb-12">
               <Img
-                src="https://immich.app/img/immich-logo-inline-light.png"
+                src={`${baseUrl}/pixalery-logo-inline-light.png`}
                 className="h-12 antialiased rounded-none w-full"
-                alt="Immich"
+                alt="Pixalery"
               />
             </Section>
 

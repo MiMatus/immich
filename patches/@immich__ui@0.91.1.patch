@@ -1,0 +1,9 @@
+diff --git a/dist/components/Logo/Logo.svelte b/dist/components/Logo/Logo.svelte
+--- a/dist/components/Logo/Logo.svelte
++++ b/dist/components/Logo/Logo.svelte
+@@ -37,4 +37,4 @@
+   const src = $derived(logoManager.getLogo(variant, themeManager.value));
+ </script>
+ 
+-<img {src} class={cleanClass(styles({ size, variant }), className)} alt="Immich logo" draggable="false" />
++<img {src} class={cleanClass(styles({ size, variant }), className)} alt="Pixalery logo" draggable="false" />

@@ -7,9 +7,10 @@ import { ImmichFooter } from 'src/emails/components/footer.template.js';
 interface FutoLayoutProps {
   children: React.ReactNode;
   preview: string;
+  baseUrl?: string;
 }
 
-export const FutoLayout = ({ children, preview }: FutoLayoutProps) => (
+export const FutoLayout = ({ children, preview, baseUrl = 'https://pixelary.com' }: FutoLayoutProps) => (
   <Html>
     <Tailwind
       config={{
@@ -50,9 +51,9 @@ export const FutoLayout = ({ children, preview }: FutoLayoutProps) => (
           <Section className="my-6 p-12 border border-red-400 rounded-[50px] bg-gray-50">
             <Section className="flex justify-center mb-12">
               <Img
-                src="https://immich.app/img/immich-logo-inline-light.png"
+                src={`${baseUrl}/pixalery-logo-inline-light.png`}
                 className="h-12 antialiased rounded-none"
-                alt="Immich"
+                alt="Pixalery"
               />
             </Section>
 

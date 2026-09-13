@@ -40,8 +40,9 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password, customT
       preview={
         customTemplate
           ? templatePreview(customTemplate, usableTemplateVariables)
-          : 'You have been invited to a new Immich instance.'
+          : 'You have been invited to a new Pixalery instance.'
       }
+      baseUrl={baseUrl}
     >
       {customTemplate && (
         <Text className="m-0">

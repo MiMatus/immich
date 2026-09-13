@@ -1,5 +1,5 @@
 name: immich_mobile
-description: Immich - selfhosted backup media file on mobile phone
+description: Pixalery - self-hosted backup of media files on your mobile phone
 
 publish_to: 'none'
 version: 3.4.2+3040299

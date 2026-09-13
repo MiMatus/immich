@@ -1,6 +1,6 @@
 {
   "background_color": "#ffffff",
-  "description": "Self-hosted photo and video backup solution directly from your mobile phone.",
+  "description": "Pixalery collects every photo your guests take at a wedding or party into one shared, full-resolution album.",
   "dir": "auto",
   "display": "standalone",
   "icons": [
@@ -18,8 +18,8 @@
     }
   ],
   "lang": "en",
-  "name": "Immich",
-  "short_name": "Immich",
+  "name": "Pixalery",
+  "short_name": "Pixalery",
   "shortcuts": [
     {
       "name": "Photos",

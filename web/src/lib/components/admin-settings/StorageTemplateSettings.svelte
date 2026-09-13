@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { docsUrl } from '#lib/brand.ts';
   import SettingInputField from '#lib/components/shared-components/settings/SettingInputField.svelte';
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
   import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
@@ -269,9 +270,9 @@
         <FormatMessage key="admin.storage_template_more_details">
           {#snippet children({ tag, message })}
             {#if tag === 'template-link'}
-              <Link href="https://docs.immich.app/administration/storage-template">{message}</Link>
+              <Link href={docsUrl('/administration/storage-template')}>{message}</Link>
             {:else if tag === 'implications-link'}
-              <Link href="https://docs.immich.app/administration/backup-and-restore#asset-types-and-storage-locations">
+              <Link href={docsUrl('/administration/backup-and-restore#asset-types-and-storage-locations')}>
                 {message}
               </Link>
             {/if}

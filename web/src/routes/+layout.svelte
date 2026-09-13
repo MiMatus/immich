@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { BRAND_NAME, brandLogos } from '#lib/brand.ts';
   import { getPagesProvider, getSettingsProvider } from '#lib/commands.ts';
   import OnEvents from '#lib/components/OnEvents.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
@@ -22,6 +23,7 @@
     ScreencastOverlay,
     TooltipProvider,
     defaultProvider,
+    logoManager,
     modalManager,
     setLocale,
     setTranslations,
@@ -41,6 +43,9 @@
   import NavigationLoadingBar from './NavigationLoadingBar.svelte';
   import UploadPanel from './UploadPanel.svelte';
   import VersionAnnouncement from './VersionAnnouncement.svelte';
+
+  // Replace the @immich/ui logo set with the Pixalery artwork before anything renders.
+  logoManager.setLogo(brandLogos);
 
   interface Props {
     children?: Snippet;
@@ -212,7 +217,7 @@
 <VersionAnnouncement />
 
 <svelte:head>
-  <title>{page.data.meta?.title || 'Web'} - Immich</title>
+  <title>{page.data.meta?.title || 'Web'} - {BRAND_NAME}</title>
   <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
   <meta name="theme-color" content="white" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="black" media="(prefers-color-scheme: dark)" />

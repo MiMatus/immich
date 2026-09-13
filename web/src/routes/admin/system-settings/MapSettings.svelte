@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { docsUrl } from '#lib/brand.ts';
   import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
   import SettingInputField from '#lib/components/shared-components/settings/SettingInputField.svelte';
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
@@ -59,7 +60,7 @@
             <p class="text-sm dark:text-immich-dark-fg">
               <FormatMessage key="admin.map_manage_reverse_geocoding_settings">
                 {#snippet children({ message })}
-                  <Link href="https://docs.immich.app/features/reverse-geocoding">{message}</Link>
+                  <Link href={docsUrl('/features/reverse-geocoding')}>{message}</Link>
                 {/snippet}
               </FormatMessage>
             </p>

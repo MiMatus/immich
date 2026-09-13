@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { docsUrl } from '#lib/brand.ts';
   import FormatMessage from '#lib/elements/FormatMessage.svelte';
   import { ConfirmModal, Link } from '@immich/ui';
   import { mdiCancel } from '@mdi/js';
@@ -18,7 +19,7 @@
       <p>
         <FormatMessage key="admin.authentication_settings_reenable">
           {#snippet children({ message })}
-            <Link href="https://docs.immich.app/administration/server-commands">{message}</Link>
+            <Link href={docsUrl('/administration/server-commands')}>{message}</Link>
           {/snippet}
         </FormatMessage>
       </p>

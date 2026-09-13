@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { BRAND_URLS } from '#lib/brand.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { releaseManager } from '#lib/managers/release-manager.svelte.ts';
   import ServerAboutModal from '#lib/modals/ServerAboutModal.svelte';
@@ -35,7 +36,7 @@
       return;
     }
 
-    return { availableVersion, releaseUrl: `https://github.com/immich-app/immich/releases/tag/${availableVersion}` };
+    return { availableVersion, releaseUrl: `${BRAND_URLS.releases}/${availableVersion}` };
   };
 
   const releaseInfo = $derived(getReleaseInfo(releaseManager.value));

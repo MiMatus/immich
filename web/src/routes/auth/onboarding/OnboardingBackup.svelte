@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { docsUrl } from '#lib/brand.ts';
   import FormatMessage from '#lib/elements/FormatMessage.svelte';
   import { Icon, Link, Stack } from '@immich/ui';
   import { mdiAlertCircleOutline } from '@mdi/js';
@@ -47,7 +48,7 @@
       <p>
         <FormatMessage key="admin.backup_onboarding_footer">
           {#snippet children({ message })}
-            <Link href="https://docs.immich.app/administration/backup-and-restore/">{message}</Link>
+            <Link href={docsUrl('/administration/backup-and-restore/')}>{message}</Link>
           {/snippet}
         </FormatMessage>
       </p>

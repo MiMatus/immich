@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { BRAND_URLS } from '#lib/brand.ts';
   import FormatMessage from '#lib/elements/FormatMessage.svelte';
   import { BasicModal } from '@immich/ui';
   import { t } from 'svelte-i18n';
@@ -24,7 +25,7 @@
     {#snippet children({ tag, message })}
       {#if tag === 'link'}
         <span class="font-medium underline">
-          <a href="https://github.com/immich-app/immich/releases/latest" target="_blank" rel="noopener noreferrer">
+          <a href={BRAND_URLS.releases} target="_blank" rel="noopener noreferrer">
             {message}
           </a>
         </span>

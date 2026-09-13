@@ -39,6 +39,7 @@ export const AlbumInviteEmail = ({
   return (
     <ImmichLayout
       preview={customTemplate ? templatePreview(customTemplate, variables) : 'You have been added to a shared album.'}
+      baseUrl={baseUrl}
     >
       {customTemplate && (
         <Text className="m-0">

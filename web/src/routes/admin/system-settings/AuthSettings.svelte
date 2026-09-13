@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { docsUrl } from '#lib/brand.ts';
   import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
   import SettingInputField from '#lib/components/shared-components/settings/SettingInputField.svelte';
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
@@ -80,7 +81,7 @@
             <Text size="small">
               <FormatMessage key="admin.oauth_settings_more_details">
                 {#snippet children({ message })}
-                  <Link href="https://docs.immich.app/administration/oauth">{message}</Link>
+                  <Link href={docsUrl('/administration/oauth')}>{message}</Link>
                 {/snippet}
               </FormatMessage>
             </Text>

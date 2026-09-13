@@ -42,9 +42,15 @@ const List<(String, String)> kWidgetNames = [
 
 const int kMinMonthsToEnableScrubberSnap = 12;
 
-const String kImmichAppStoreLink = "https://apps.apple.com/app/immich/id1613945652";
-const String kImmichPlayStoreLink = "https://play.google.com/store/apps/details?id=app.alextran.immich";
-const String kImmichLatestRelease = "https://github.com/immich-app/immich/releases/latest";
+// Pixalery brand links (placeholders until the pages exist; keep in sync with web/src/lib/brand.ts)
+const String kBrandSiteUrl = "https://pixelary.com";
+const String kBrandDocsUrl = "https://pixelary.com/docs";
+const String kBrandSourceUrl = "https://pixelary.com/source";
+const String kBrandIssuesUrl = "https://pixelary.com/issues";
+const String kBrandDownloadUrl = "https://pixelary.com/download";
+const String kImmichAppStoreLink = kBrandDownloadUrl;
+const String kImmichPlayStoreLink = kBrandDownloadUrl;
+const String kImmichLatestRelease = "https://pixelary.com/releases";
 
 const int kPhotoTabIndex = 0;
 const int kSearchTabIndex = 1;

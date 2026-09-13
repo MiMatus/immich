@@ -1,3 +1,4 @@
+import { BRAND_URLS } from '#lib/brand.ts';
 import { OpenQueryParam, type SharedLinkTab } from '#lib/constants.ts';
 import { IntegrityReport, QueueName, getBaseUrl, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
 import { omitBy } from 'lodash-es';
@@ -165,7 +166,7 @@ export const Route = {
 };
 
 export const ExternalRoute = {
-  docs: () => 'https://docs.immich.app/overview/quick-start',
+  docs: () => BRAND_URLS.docs,
 };
 
 export const ApiRoute = {

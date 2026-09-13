@@ -1,5 +1,6 @@
 <script lang="ts">
   import { shortcuts } from '#lib/actions/shortcut.ts';
+  import { docsUrl } from '#lib/brand.ts';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { languageManager } from '#lib/managers/language-manager.svelte.ts';
@@ -258,7 +259,7 @@
     {#if duplicates && duplicates.length > 0}
       <Text size="small" color="muted" class="mb-4">
         {$t('duplicates_description')}
-        <LinkToDocs href="https://docs.immich.app/features/duplicates-utility" />
+        <LinkToDocs href={docsUrl('/features/duplicates-utility')} />
       </Text>
 
       {#key duplicates[duplicatesIndex].duplicateId}

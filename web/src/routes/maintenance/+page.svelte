@@ -1,5 +1,6 @@
 <script lang="ts">
   /* eslint-disable unicorn/no-optional-chaining-on-undeclared-variable */
+  import { docsUrl } from '#lib/brand.ts';
   import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
   import FormatMessage from '#lib/elements/FormatMessage.svelte';
   import { handleSetMaintenanceMode } from '#lib/services/maintenance.service.ts';
@@ -96,7 +97,7 @@
           <FormatMessage key="maintenance_description">
             {#snippet children({ tag, message })}
               {#if tag === 'link'}
-                <Link href="https://docs.immich.app/administration/maintenance-mode">
+                <Link href={docsUrl('/administration/maintenance-mode')}>
                   {message}
                 </Link>
               {/if}

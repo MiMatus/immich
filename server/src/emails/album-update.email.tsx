@@ -42,6 +42,7 @@ export const AlbumUpdateEmail = ({
           ? templatePreview(customTemplate, usableTemplateVariables)
           : 'New media has been added to a shared album.'
       }
+      baseUrl={baseUrl}
     >
       {customTemplate && (
         <Text className="m-0">
