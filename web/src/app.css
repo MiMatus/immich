@@ -99,6 +99,52 @@
     --immich-dark-gray: 33 33 33;
   }
 
+  /*
+   * Pixalery landing palette. Active only while a /shared-album page is mounted
+   * (ManageSharedLinkPage toggles the class on <html>), so dialogs and toasts
+   * rendered at the document root inherit it too.
+   */
+  :root.theme-pixalery {
+    /* accent: landing violet, both modes */
+    --immich-ui-primary-50: #f7ecfa;
+    --immich-ui-primary-100: #efd9f5;
+    --immich-ui-primary-200: #dfb4eb;
+    --immich-ui-primary-300: #d08ee1;
+    --immich-ui-primary-400: #c26ad8;
+    --immich-ui-primary-500: #b552d0;
+    --immich-ui-primary-600: #9a3fb3;
+    --immich-ui-primary-700: #7d3291;
+    --immich-ui-primary-800: #5f256f;
+    --immich-ui-primary-900: #41194c;
+    --immich-ui-primary-950: #2a0f32;
+    --immich-primary: 181 82 208;
+    --immich-dark-primary: 181 82 208;
+  }
+
+  :root.theme-pixalery.dark {
+    /* surfaces mirror pixalery/src/index.css */
+    --immich-ui-light: #0f1113; /* --background */
+    --immich-ui-light-50: #14161a;
+    --immich-ui-light-100: #1c1b27; /* --card */
+    --immich-ui-light-200: #2a2c33; /* --border */
+    --immich-ui-light-300: #363944;
+    --immich-ui-light-400: #4b4f5c;
+    --immich-ui-light-500: #6b6f7c;
+    --immich-ui-light-600: #9a9da6; /* --muted-foreground */
+    --immich-ui-light-700: #b7b9c0;
+    --immich-ui-light-800: #d3d5da;
+    --immich-ui-light-900: #e9eaed;
+    --immich-ui-light-950: #f5f5f7;
+    --immich-ui-dark: #f5f5f7; /* --foreground */
+    --immich-ui-muted: #9a9da6;
+    --immich-ui-gray: #1c1b27; /* bg-subtle */
+    --immich-ui-default-border: #2a2c33;
+    --immich-dark-bg: 15 17 19;
+    --immich-dark-fg: 245 245 247;
+    --immich-dark-gray: 42 44 51;
+    background-color: #0f1113; /* beats html.dark { black } in app.html */
+  }
+
   button:not(:disabled),
   [role='button']:not(:disabled) {
     cursor: pointer;
@@ -187,6 +233,16 @@
 
   .icon-white-drop-shadow {
     filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.8));
+  }
+
+  /* Pixalery landing accents (used by the /shared-album pages) */
+  .text-gradient-violet {
+    background-image: linear-gradient(135deg, #b552d0, #3494dc);
+    @apply bg-clip-text text-transparent;
+  }
+
+  .bg-hero-glow {
+    background: radial-gradient(60% 60% at 50% 0%, rgb(181 82 208 / 0.22), transparent 70%);
   }
 }
 

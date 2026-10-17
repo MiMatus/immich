@@ -10,8 +10,9 @@ export type AssetGridRouteSearchParams = {
 
 export const isPhotosRoute = (route?: string | null) => !!route?.startsWith('/(user)/photos/[[assetId=id]]');
 const isSharedLinkSlugRoute = (route?: string | null) => !!route?.startsWith('/(user)/s/[slug]');
+const isSharedAlbumRoute = (route?: string | null) => !!route?.startsWith('/(user)/shared-album/[key]');
 export const isSharedLinkRoute = (route?: string | null) =>
-  !!route?.startsWith('/(user)/share/[key]') || isSharedLinkSlugRoute(route);
+  !!route?.startsWith('/(user)/share/[key]') || isSharedLinkSlugRoute(route) || isSharedAlbumRoute(route);
 export const isAlbumsRoute = (route?: string | null) => !!route?.startsWith('/(user)/albums/[albumId=id]');
 export const isPeopleRoute = (route?: string | null) => !!route?.startsWith('/(user)/people/[personId]');
 export const isLockedFolderRoute = (route?: string | null) => !!route?.startsWith('/(user)/locked');

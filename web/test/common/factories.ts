@@ -279,6 +279,7 @@ const sharedLink = (overrides: Partial<SharedLinkResponseDto> = {}): SharedLinkR
   description: null,
   password: null,
   expiresAt: null,
+  allowDelete: false,
   allowDownload: true,
   allowUpload: false,
   showMetadata: true,

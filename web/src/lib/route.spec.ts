@@ -24,6 +24,12 @@ describe('Route', () => {
     });
   });
 
+  describe(Route.sharedAlbum.name, () => {
+    it('should build the shared album url for a key', () => {
+      expect(Route.sharedAlbum({ key: 'uuid-key' })).toBe('/shared-album/uuid-key');
+    });
+  });
+
   describe(Route.viewSharedLink.name, () => {
     it('should work with key', () => {
       expect(Route.viewSharedLink({ key: 'uuid-key' })).toBe('/share/uuid-key');
