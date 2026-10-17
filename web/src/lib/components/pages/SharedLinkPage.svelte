@@ -2,6 +2,7 @@
   import AlbumViewer from '#lib/components/album-page/AlbumViewer.svelte';
   import IndividualSharedViewer from '#lib/components/share-page/IndividualSharedViewer.svelte';
   import ControlAppBar from '#lib/components/shared-components/ControlAppBar.svelte';
+  import SourceLink from '#lib/components/shared-components/SourceLink.svelte';
   import ThemeButton from '#lib/components/shared-components/ThemeButton.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
@@ -93,6 +94,7 @@
       {/snippet}
 
       {#snippet trailing()}
+        <SourceLink />
         <ThemeButton />
       {/snippet}
     </ControlAppBar>

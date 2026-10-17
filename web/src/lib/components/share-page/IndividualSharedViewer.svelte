@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Action } from '#lib/components/asset-viewer/actions/action.ts';
+  import SourceLink from '#lib/components/shared-components/SourceLink.svelte';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
   import RemoveFromSharedLink from '#lib/components/timeline/actions/RemoveFromSharedLinkAction.svelte';
@@ -133,6 +134,7 @@
               icon={mdiDownload}
             />
           {/if}
+          <SourceLink />
         {/snippet}
       </ControlAppBar>
     {/if}

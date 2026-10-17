@@ -7,6 +7,7 @@
   import { shortcut } from '#lib/actions/shortcut.ts';
   import AlbumMap from '#lib/components/album-page/AlbumMap.svelte';
   import ManageTrashAssetsAction from '#lib/components/album-page/ManageTrashAssetsAction.svelte';
+  import SourceLink from '#lib/components/shared-components/SourceLink.svelte';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '#lib/components/timeline/Timeline.svelte';
   import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
@@ -171,6 +172,7 @@
         {#if sharedLink.showMetadata && publicConfig.map.enabled}
           <AlbumMap {album} />
         {/if}
+        <SourceLink />
         <ThemeButton />
       {/snippet}
     </ControlAppBar>

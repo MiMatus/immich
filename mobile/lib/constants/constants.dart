@@ -45,7 +45,7 @@ const int kMinMonthsToEnableScrubberSnap = 12;
 // Pixalery brand links (placeholders until the pages exist; keep in sync with web/src/lib/brand.ts)
 const String kBrandSiteUrl = "https://pixelary.com";
 const String kBrandDocsUrl = "https://pixelary.com/docs";
-const String kBrandSourceUrl = "https://pixelary.com/source";
+const String kBrandSourceUrl = "https://github.com/MiMatus/immich";
 const String kBrandIssuesUrl = "https://pixelary.com/issues";
 const String kBrandDownloadUrl = "https://pixelary.com/download";
 const String kImmichAppStoreLink = kBrandDownloadUrl;

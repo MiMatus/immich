@@ -22,7 +22,7 @@ export const BRAND_URLS = {
   site: 'https://pixelary.com',
   docs: 'https://pixelary.com/docs',
   support: 'https://pixelary.com/support',
-  source: 'https://pixelary.com/source',
+  source: 'https://github.com/MiMatus/immich',
   issues: 'https://pixelary.com/issues',
   releases: 'https://pixelary.com/releases',
 } as const;
