@@ -88,7 +88,7 @@
   <header>
     <ControlAppBar>
       {#snippet leading()}
-        <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
+        <a data-sveltekit-reload class="ms-4" href="/">
           <Logo variant="inline" />
         </a>
       {/snippet}
