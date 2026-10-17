@@ -12,6 +12,8 @@ RUN npm install --global corepack@latest && \
 WORKDIR /usr/src/app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.cjs ./
+# patchedDependencies of pnpm-workspace.yaml; pnpm reads them on every install, even a filtered one.
+COPY patches ./patches
 
 FROM builder AS sdk
 
@@ -38,8 +40,9 @@ COPY ./server ./server/
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
   pnpm --filter immich build && \
   pnpm --filter immich --prod --no-optional deploy /output/server-pruned
+# npm_config_nodedir: node-gyp takes the Node headers of the base image instead of downloading them.
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
-  SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --config.verify-deps-before-run=false --dir /output/server-pruned/node_modules/sharp exec npm run build
+  SHARP_FORCE_GLOBAL_LIBVIPS=true npm_config_nodedir=/usr/local pnpm --config.verify-deps-before-run=false --dir /output/server-pruned/node_modules/sharp exec npm run build
 
 FROM sdk AS web
 
@@ -76,7 +79,8 @@ COPY ./.mise ./.mise
 COPY ./packages/plugin-core/mise.toml ./packages/plugin-core/
 ENV MISE_TRUSTED_CONFIG_PATHS=/usr/src/app/mise.toml
 ENV MISE_DATA_DIR=/buildcache/mise
-ENV MISE_DISABLE_TOOLS=flutter
+# jellyfin-ffmpeg is not needed for the plugins and mise.lock has no linux-x64 entry for it.
+ENV MISE_DISABLE_TOOLS=flutter,github:jellyfin/jellyfin-ffmpeg
 RUN --mount=type=cache,id=mise-tools-${TARGETPLATFORM},target=/buildcache/mise \
   mise install --locked
 COPY ./packages/plugin-core ./packages/plugin-core/
