@@ -62,6 +62,7 @@ const authSharedLinkFactory = (sharedLink: Partial<AuthSharedLink> = {}) => {
     albumId = null,
     allowUpload = false,
     allowDownload = true,
+    allowDelete = false,
     password = null,
   } = sharedLink;
 
@@ -73,6 +74,7 @@ const authSharedLinkFactory = (sharedLink: Partial<AuthSharedLink> = {}) => {
     showExif,
     allowUpload,
     allowDownload,
+    allowDelete,
     password,
   };
 };

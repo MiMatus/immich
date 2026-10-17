@@ -347,6 +347,96 @@ describe('/shared-links', () => {
       expect(status).toBe(201);
       expect(body).toEqual(expect.objectContaining({ type: SharedLinkType.Album, userId: user1.userId }));
     });
+
+    it('should default allowDelete to false', async () => {
+      const { status, body } = await request(app)
+        .post('/shared-links')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ type: SharedLinkType.Album, albumId: album.id });
+
+      expect(status).toBe(201);
+      expect(body).toEqual(expect.objectContaining({ allowDelete: false }));
+    });
+
+    it('should create an album shared link with allowDelete', async () => {
+      const { status, body } = await request(app)
+        .post('/shared-links')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ type: SharedLinkType.Album, albumId: album.id, allowDelete: true });
+
+      expect(status).toBe(201);
+      expect(body).toEqual(expect.objectContaining({ type: SharedLinkType.Album, allowDelete: true }));
+    });
+
+    it('should reject allowDelete on an individual shared link', async () => {
+      const { status } = await request(app)
+        .post('/shared-links')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ type: SharedLinkType.Individual, assetIds: [asset1.id], allowDelete: true });
+
+      expect(status).toBe(400);
+    });
+  });
+
+  describe('DELETE /assets (shared link key)', () => {
+    let deletableAsset: AssetMediaResponseDto;
+    let otherAsset: AssetMediaResponseDto;
+    let linkWithDelete: SharedLinkResponseDto;
+    let linkWithoutDelete: SharedLinkResponseDto;
+
+    beforeAll(async () => {
+      [deletableAsset, otherAsset] = await Promise.all([
+        utils.createAsset(user1.accessToken),
+        utils.createAsset(user1.accessToken),
+      ]);
+      const deletableAlbum = await createAlbum(
+        { createAlbumDto: { albumName: 'deletable album', assetIds: [deletableAsset.id] } },
+        { headers: asBearerAuth(user1.accessToken) },
+      );
+      const create = async (dto: object) => {
+        const { body } = await request(app)
+          .post('/shared-links')
+          .set('Authorization', `Bearer ${user1.accessToken}`)
+          .send(dto);
+        return body as SharedLinkResponseDto;
+      };
+      [linkWithDelete, linkWithoutDelete] = await Promise.all([
+        create({ type: SharedLinkType.Album, albumId: deletableAlbum.id, allowDelete: true }),
+        create({ type: SharedLinkType.Album, albumId: deletableAlbum.id }),
+      ]);
+    });
+
+    it('should reject a shared link without allowDelete', async () => {
+      const { status, body } = await request(app)
+        .delete('/assets')
+        .query({ key: linkWithoutDelete.key })
+        .send({ ids: [deletableAsset.id] });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('Not found or no asset.delete access'));
+    });
+
+    it('should reject an asset that is not in the linked album', async () => {
+      const { status, body } = await request(app)
+        .delete('/assets')
+        .query({ key: linkWithDelete.key })
+        .send({ ids: [otherAsset.id] });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('Not found or no asset.delete access'));
+    });
+
+    it('should move an album asset to the trash and ignore force', async () => {
+      const { status } = await request(app)
+        .delete('/assets')
+        .query({ key: linkWithDelete.key })
+        .send({ ids: [deletableAsset.id], force: true });
+
+      expect(status).toBe(204);
+
+      const asset = await utils.getAssetInfo(user1.accessToken, deletableAsset.id);
+      expect(asset.isTrashed).toBe(true);
+    });
   });
 
   describe('PATCH /shared-links/:id', () => {

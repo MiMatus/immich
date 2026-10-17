@@ -74,7 +74,7 @@ export class AssetController {
   }
 
   @Delete()
-  @Authenticated({ permission: Permission.AssetDelete })
+  @Authenticated({ permission: Permission.AssetDelete, sharedLink: true })
   @HttpCode(HttpStatus.NO_CONTENT)
   @Endpoint({
     summary: 'Delete assets',

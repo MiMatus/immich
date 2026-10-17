@@ -31,8 +31,13 @@ const SharedLinkCreateSchema = z
     allowUpload: z.boolean().optional().describe('Allow uploads'),
     allowDownload: z.boolean().default(true).optional().describe('Allow downloads'),
     showMetadata: z.boolean().default(true).optional().describe('Show metadata'),
+    allowDelete: z
+      .boolean()
+      .default(false)
+      .optional()
+      .describe('Allow visitors to move album assets to the trash (album links only)'),
   })
-  .superRefine(({ type, albumId, assetIds }, ctx) => {
+  .superRefine(({ type, albumId, assetIds, allowDelete }, ctx) => {
     switch (type) {
       case SharedLinkType.Album: {
         if (!albumId) {
@@ -51,6 +56,9 @@ const SharedLinkCreateSchema = z
         if (albumId) {
           ctx.addIssue(`albumId can only be used with type ${SharedLinkType.Album}`);
         }
+        if (allowDelete) {
+          ctx.addIssue(`allowDelete can only be used with type ${SharedLinkType.Album}`);
+        }
         return;
       }
     }
@@ -66,6 +74,7 @@ const SharedLinkEditSchema = z
     allowUpload: z.boolean().optional().describe('Allow uploads'),
     allowDownload: z.boolean().optional().describe('Allow downloads'),
     showMetadata: z.boolean().optional().describe('Show metadata'),
+    allowDelete: z.boolean().optional().describe('Allow visitors to move album assets to the trash (album links only)'),
   })
   .meta({ id: 'SharedLinkEditDto' });
 
@@ -90,6 +99,7 @@ const SharedLinkResponseSchema = z
     allowUpload: z.boolean().describe('Allow uploads'),
     allowDownload: z.boolean().describe('Allow downloads'),
     showMetadata: z.boolean().describe('Show metadata'),
+    allowDelete: z.boolean().describe('Allow visitors to move album assets to the trash'),
     slug: z.string().nullable().describe('Custom URL slug'),
   })
   .describe('Shared link response')
@@ -121,6 +131,7 @@ export function mapSharedLink(
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showMetadata: sharedLink.showExif,
+    allowDelete: sharedLink.allowDelete,
     slug: sharedLink.slug,
   };
 

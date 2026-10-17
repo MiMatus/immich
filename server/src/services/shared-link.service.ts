@@ -102,6 +102,7 @@ export class SharedLinkService extends BaseService {
         allowUpload: dto.allowUpload ?? true,
         allowDownload: dto.showMetadata !== false && (dto.allowDownload ?? true),
         showExif: dto.showMetadata ?? true,
+        allowDelete: dto.allowDelete ?? false,
         slug: dto.slug || null,
       });
 
@@ -120,7 +121,10 @@ export class SharedLinkService extends BaseService {
   }
 
   async update(auth: AuthDto, id: string, dto: SharedLinkEditDto) {
-    await this.findOrFail(auth.user.id, id);
+    const existing = await this.findOrFail(auth.user.id, id);
+    if (dto.allowDelete && existing.type !== SharedLinkType.Album) {
+      throw new BadRequestException(`allowDelete can only be used with type ${SharedLinkType.Album}`);
+    }
     try {
       const sharedLink = await this.sharedLinkRepository.update({
         id,
@@ -131,6 +135,7 @@ export class SharedLinkService extends BaseService {
         allowUpload: dto.allowUpload,
         allowDownload: dto.allowDownload,
         showExif: dto.showMetadata,
+        allowDelete: dto.allowDelete,
         slug: dto.slug || null,
       });
       return mapSharedLink(sharedLink, { auth });

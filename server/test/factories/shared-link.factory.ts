@@ -38,6 +38,7 @@ export class SharedLinkFactory {
       allowUpload: true,
       allowDownload: true,
       showExif: true,
+      allowDelete: false,
       password: null,
       slug: null,
       ...dto,

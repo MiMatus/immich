@@ -171,8 +171,25 @@ describe(SharedLinkService.name, () => {
         expiresAt: null,
         slug: null,
         showExif: true,
+        allowDelete: false,
         key: Buffer.from('random-bytes', 'utf8'),
       });
+    });
+
+    it('should create an album shared link with allowDelete', async () => {
+      const album = AlbumFactory.from().asset().build();
+      const sharedLink = SharedLinkFactory.from({ allowDelete: true }).album(album).build();
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
+      mocks.sharedLink.create.mockResolvedValue(getForSharedLink(sharedLink));
+
+      const response = await sut.create(authStub.admin, {
+        type: SharedLinkType.Album,
+        albumId: album.id,
+        allowDelete: true,
+      });
+
+      expect(mocks.sharedLink.create).toHaveBeenCalledWith(expect.objectContaining({ allowDelete: true }));
+      expect(response.allowDelete).toBe(true);
     });
 
     it('should create an individual shared link', async () => {
@@ -207,6 +224,7 @@ describe(SharedLinkService.name, () => {
         description: null,
         expiresAt: null,
         showExif: true,
+        allowDelete: false,
         key: Buffer.from('random-bytes', 'utf8'),
       });
     });
@@ -243,6 +261,7 @@ describe(SharedLinkService.name, () => {
         expiresAt: null,
         showExif: false,
         slug: null,
+        allowDelete: false,
         key: Buffer.from('random-bytes', 'utf8'),
       });
     });
@@ -272,6 +291,31 @@ describe(SharedLinkService.name, () => {
         userId: authStub.user1.user.id,
         allowDownload: false,
       });
+    });
+
+    it('should reject allowDelete on an individual shared link', async () => {
+      const sharedLink = SharedLinkFactory.from()
+        .asset({}, (builder) => builder.exif())
+        .build();
+      mocks.sharedLink.get.mockResolvedValue(getForSharedLink(sharedLink));
+
+      await expect(sut.update(authStub.user1, sharedLink.id, { allowDelete: true })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      expect(mocks.sharedLink.update).not.toHaveBeenCalled();
+    });
+
+    it('should update allowDelete on an album shared link', async () => {
+      const album = AlbumFactory.from().asset().build();
+      const sharedLink = SharedLinkFactory.from().album(album).build();
+      mocks.sharedLink.get.mockResolvedValue(getForSharedLink(sharedLink));
+      mocks.sharedLink.update.mockResolvedValue(getForSharedLink({ ...sharedLink, allowDelete: true }));
+
+      const response = await sut.update(authStub.user1, sharedLink.id, { allowDelete: true });
+
+      expect(mocks.sharedLink.update).toHaveBeenCalledWith(expect.objectContaining({ allowDelete: true }));
+      expect(response.allowDelete).toBe(true);
     });
   });
 

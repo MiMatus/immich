@@ -1,5 +1,5 @@
 /**
- * Immich
+ * Pixalery
  * 3.4.2
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
@@ -1306,7 +1306,7 @@ export type TagResponseDto = {
 export type AssetResponseDto = {
     /** Base64 encoded SHA1 hash */
     checksum: string;
-    /** The UTC timestamp when the asset was originally uploaded to Immich. */
+    /** The UTC timestamp when the asset was originally uploaded to Pixalery. */
     createdAt: string;
     /** Duplicate group ID */
     duplicateId?: string | null;
@@ -3055,6 +3055,8 @@ export type SessionUpdateDto = {
 };
 export type SharedLinkResponseDto = {
     album?: AlbumResponseDto;
+    /** Allow visitors to move album assets to the trash */
+    allowDelete: boolean;
     /** Allow downloads */
     allowDownload: boolean;
     /** Allow uploads */
@@ -3083,6 +3085,8 @@ export type SharedLinkResponseDto = {
 export type SharedLinkCreateDto = {
     /** Album ID (for album sharing) */
     albumId?: string;
+    /** Allow visitors to move album assets to the trash (album links only) */
+    allowDelete?: boolean;
     /** Allow downloads */
     allowDownload?: boolean;
     /** Allow uploads */
@@ -3106,6 +3110,8 @@ export type SharedLinkLoginDto = {
     password: string;
 };
 export type SharedLinkEditDto = {
+    /** Allow visitors to move album assets to the trash (album links only) */
+    allowDelete?: boolean;
     /** Allow downloads */
     allowDownload?: boolean;
     /** Allow uploads */
@@ -3227,7 +3233,7 @@ export type TimeBucketAssetResponseDto = {
     city?: (string | null)[];
     /** Array of country names extracted from EXIF GPS data */
     country?: (string | null)[];
-    /** Array of UTC timestamps when each asset was originally uploaded to Immich */
+    /** Array of UTC timestamps when each asset was originally uploaded to Pixalery */
     createdAt: string[];
     /** Array of video/gif durations in milliseconds (null for static images) */
     duration: (number | null)[];
@@ -3658,7 +3664,7 @@ export type SyncAssetOcrV1 = {
 export type SyncAssetV1 = {
     /** Checksum */
     checksum: string;
-    /** Uploaded to Immich at */
+    /** Uploaded to Pixalery at */
     createdAt: string | null;
     /** Deleted at */
     deletedAt: string | null;
@@ -3698,7 +3704,7 @@ export type SyncAssetV1 = {
 export type SyncAssetV2 = {
     /** Checksum */
     checksum: string;
-    /** Uploaded to Immich at */
+    /** Uploaded to Pixalery at */
     createdAt: string | null;
     /** Deleted at */
     deletedAt: string | null;
@@ -4809,10 +4815,15 @@ export function downloadAssetFile({ id }: {
 /**
  * Delete assets
  */
-export function deleteAssets({ assetBulkDeleteDto }: {
+export function deleteAssets({ key, slug, assetBulkDeleteDto }: {
+    key?: string;
+    slug?: string;
     assetBulkDeleteDto: AssetBulkDeleteDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/assets", oazapfts.json({
+    return oazapfts.ok(oazapfts.fetchText(`/assets${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, oazapfts.json({
         ...opts,
         method: "DELETE",
         body: assetBulkDeleteDto

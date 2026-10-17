@@ -145,6 +145,13 @@ const checkSharedLinkAccess = async (
       return sharedLink.allowUpload ? await access.album.checkSharedLinkAccess(sharedLinkId, ids) : new Set();
     }
 
+    case Permission.AssetDelete: {
+      // only album links may be granted delete rights; the check resolves the linked album's assets
+      return sharedLink.allowDelete && sharedLink.albumId
+        ? await access.asset.checkSharedLinkAccess(sharedLinkId, ids)
+        : new Set();
+    }
+
     default: {
       return new Set<string>();
     }

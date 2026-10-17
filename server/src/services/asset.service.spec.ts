@@ -531,6 +531,62 @@ describe(AssetService.name, () => {
       });
       expect(mocks.job.queue.mock.calls).toEqual([]);
     });
+
+    describe('shared link', () => {
+      const albumId = newUuid();
+
+      it('should trash album assets for a shared link with allowDelete', async () => {
+        const auth = factory.auth({ sharedLink: { allowDelete: true, albumId } });
+        mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set(['asset1', 'asset2']));
+
+        await sut.deleteAll(auth, { ids: ['asset1', 'asset2'], force: false });
+
+        expect(mocks.access.asset.checkSharedLinkAccess).toHaveBeenCalledWith(
+          auth.sharedLink!.id,
+          new Set(['asset1', 'asset2']),
+        );
+        expect(mocks.asset.updateAll).toHaveBeenCalledWith(['asset1', 'asset2'], {
+          deletedAt: expect.any(Date),
+          status: AssetStatus.Trashed,
+        });
+        expect(mocks.event.emit).toHaveBeenCalledWith('AssetTrashAll', {
+          assetIds: ['asset1', 'asset2'],
+          userId: auth.user.id,
+        });
+      });
+
+      it('should never permanently delete for a shared link even when force is requested', async () => {
+        const auth = factory.auth({ sharedLink: { allowDelete: true, albumId } });
+        mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set(['asset1']));
+
+        await sut.deleteAll(auth, { ids: ['asset1'], force: true });
+
+        expect(mocks.asset.updateAll).toHaveBeenCalledWith(['asset1'], {
+          deletedAt: expect.any(Date),
+          status: AssetStatus.Trashed,
+        });
+        expect(mocks.event.emit).toHaveBeenCalledWith('AssetTrashAll', expect.anything());
+        expect(mocks.event.emit).not.toHaveBeenCalledWith('AssetDeleteAll', expect.anything());
+      });
+
+      it('should reject a shared link without allowDelete', async () => {
+        const auth = factory.auth({ sharedLink: { allowDelete: false, albumId } });
+
+        await expect(sut.deleteAll(auth, { ids: ['asset1'] })).rejects.toBeInstanceOf(BadRequestException);
+
+        expect(mocks.access.asset.checkSharedLinkAccess).not.toHaveBeenCalled();
+        expect(mocks.asset.updateAll).not.toHaveBeenCalled();
+      });
+
+      it('should reject an individual shared link even with allowDelete', async () => {
+        const auth = factory.auth({ sharedLink: { allowDelete: true, albumId: null } });
+
+        await expect(sut.deleteAll(auth, { ids: ['asset1'] })).rejects.toBeInstanceOf(BadRequestException);
+
+        expect(mocks.access.asset.checkSharedLinkAccess).not.toHaveBeenCalled();
+        expect(mocks.asset.updateAll).not.toHaveBeenCalled();
+      });
+    });
   });
 
   describe('handleAssetDeletionCheck', () => {

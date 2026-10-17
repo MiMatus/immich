@@ -278,6 +278,7 @@ select
   "shared_link"."showExif",
   "shared_link"."allowUpload",
   "shared_link"."allowDownload",
+  "shared_link"."allowDelete",
   "shared_link"."password",
   (
     select
@@ -317,6 +318,7 @@ select
   "shared_link"."showExif",
   "shared_link"."allowUpload",
   "shared_link"."allowDownload",
+  "shared_link"."allowDelete",
   "shared_link"."password",
   (
     select

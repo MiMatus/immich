@@ -3726,7 +3726,24 @@
       "delete": {
         "description": "Deletes multiple assets at the same time.",
         "operationId": "deleteAssets",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -28961,6 +28978,11 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
+          "allowDelete": {
+            "default": false,
+            "description": "Allow visitors to move album assets to the trash (album links only)",
+            "type": "boolean"
+          },
           "allowDownload": {
             "default": true,
             "description": "Allow downloads",
@@ -29018,6 +29040,10 @@
       },
       "SharedLinkEditDto": {
         "properties": {
+          "allowDelete": {
+            "description": "Allow visitors to move album assets to the trash (album links only)",
+            "type": "boolean"
+          },
           "allowDownload": {
             "description": "Allow downloads",
             "type": "boolean"
@@ -29074,6 +29100,10 @@
         "properties": {
           "album": {
             "$ref": "#/components/schemas/AlbumResponseDto"
+          },
+          "allowDelete": {
+            "description": "Allow visitors to move album assets to the trash",
+            "type": "boolean"
           },
           "allowDownload": {
             "description": "Allow downloads",
@@ -29144,6 +29174,7 @@
           }
         },
         "required": [
+          "allowDelete",
           "allowDownload",
           "allowUpload",
           "assets",

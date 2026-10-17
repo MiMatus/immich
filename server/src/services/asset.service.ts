@@ -372,7 +372,9 @@ export class AssetService extends BaseService {
   }
 
   async deleteAll(auth: AuthDto, dto: AssetBulkDeleteDto): Promise<void> {
-    const { ids, force } = dto;
+    const { ids } = dto;
+    // shared-link visitors may only move assets to the trash, never delete them permanently
+    const force = auth.sharedLink ? false : (dto.force ?? false);
 
     await this.requireAccess({ auth, permission: Permission.AssetDelete, ids });
     await this.assetRepository.updateAll(ids, {

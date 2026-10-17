@@ -182,6 +182,7 @@ export type AuthSharedLink = {
   showExif: boolean;
   allowUpload: boolean;
   allowDownload: boolean;
+  allowDelete: boolean;
   password: string | null;
 };
 
@@ -190,6 +191,7 @@ export type SharedLink = {
   album?: ShallowDehydrateObject<Album> | null;
   albumId: string | null;
   allowDownload: boolean;
+  allowDelete: boolean;
   allowUpload: boolean;
   assets: ShallowDehydrateObject<MapAsset>[];
   createdAt: Date;
