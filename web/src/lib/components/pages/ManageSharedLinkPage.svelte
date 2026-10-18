@@ -101,7 +101,7 @@
   <header>
     <ControlAppBar class="border border-light-200/60 bg-light/70 backdrop-blur-md">
       {#snippet leading()}
-        <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
+        <a data-sveltekit-reload class="ms-4" href="/">
           <Logo variant="inline" />
         </a>
       {/snippet}
