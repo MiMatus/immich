@@ -77,6 +77,8 @@
   }}
 />
 
+<SourceLink />
+
 <main class="relative h-dvh overflow-hidden px-2 pt-(--navbar-height) max-md:pt-(--navbar-height-md) md:px-6">
   <Timeline enableRouting={true} {album} bind:timelineManager {options} assetInteraction={assetMultiSelectManager}>
     <section class="px-2 pt-8 md:px-0 md:pt-24">
@@ -152,7 +154,6 @@
         {#if sharedLink.showMetadata && publicConfig.map.enabled}
           <AlbumMap {album} />
         {/if}
-        <SourceLink />
         <ThemeButton />
       {/snippet}
     </ControlAppBar>
