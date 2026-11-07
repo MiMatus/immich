@@ -78,7 +78,6 @@
 </script>
 
 {#if sharedLink?.allowUpload || assets.length > 1}
-  <SourceLink />
   <main
     class="isolate mx-4 mt-24 mb-40 max-h-screen"
     bind:clientHeight={viewport.height}
@@ -86,6 +85,8 @@
   >
     <GalleryViewer {assets} assetInteraction={assetMultiSelectManager} {viewport} allowDeletion={false} />
   </main>
+
+  <SourceLink />
 
   <header class="fixed inset-s-0 top-0 w-full">
     {#if assetMultiSelectManager.selectionActive}

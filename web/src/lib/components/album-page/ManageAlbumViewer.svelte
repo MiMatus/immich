@@ -93,8 +93,6 @@
   }}
 />
 
-<SourceLink />
-
 <main class="relative h-dvh overflow-hidden px-2 pt-(--navbar-height) max-md:pt-(--navbar-height-md) md:px-6">
   <div class="bg-hero-glow pointer-events-none absolute inset-x-0 top-0 -z-10 h-[520px]"></div>
   <Timeline enableRouting={true} {album} bind:timelineManager {options} assetInteraction={assetMultiSelectManager}>
@@ -119,6 +117,8 @@
     </section>
   </Timeline>
 </main>
+
+<SourceLink />
 
 <header>
   {#if assetMultiSelectManager.selectionActive}

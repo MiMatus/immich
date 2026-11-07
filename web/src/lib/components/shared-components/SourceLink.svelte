@@ -1,7 +1,8 @@
 <script lang="ts">
   // Link to the source of this modified Immich (AGPL-3.0 §13): rendered on every page a shared-link
-  // visitor can reach, as a translucent icon fixed at the bottom center. Stacking relies on DOM order:
-  // pages render it first, so the asset viewer and the control bar paint above it.
+  // visitor can reach, as a translucent icon fixed at the bottom center. Stacking relies on DOM order
+  // (no z-index anywhere): pages render it right after <main>, so it paints above the page content,
+  // while the control bar (later in the DOM) and the asset viewer (portaled to <body>) paint above it.
   import { BRAND_URLS } from '#lib/brand.ts';
   import { IconButton } from '@immich/ui';
   import { mdiGithub } from '@mdi/js';

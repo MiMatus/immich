@@ -69,7 +69,6 @@
   <title>{title}</title>
 </svelte:head>
 {#if passwordRequired}
-  <SourceLink />
   <main
     class="relative h-dvh overflow-hidden px-6 pt-(--navbar-height) max-md:pt-(--navbar-height-md) sm:px-12 md:px-24 lg:px-40"
   >
@@ -86,6 +85,7 @@
       </div>
     </div>
   </main>
+  <SourceLink />
   <header>
     <ControlAppBar>
       {#snippet leading()}
