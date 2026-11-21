@@ -114,6 +114,7 @@ export const Route = {
   viewSharedLink: ({ slug, key }: { slug?: string | null; key: string }) =>
     slug ? `/s/${encodeURIComponent(slug)}` : `/share/${key}`,
   sharedAlbum: ({ key }: { key: string }) => `/shared-album/${key}`,
+  sharedAlbumSettings: ({ key }: { key: string }) => `/shared-album/${key}/settings`,
 
   // settings
   userSettings: (params?: { isOpen?: OpenQueryParam }) => '/user-settings' + asQueryString(params),

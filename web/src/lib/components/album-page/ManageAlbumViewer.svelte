@@ -1,7 +1,8 @@
 <script lang="ts">
   // Copy of AlbumViewer for the /shared-album/[key] route, which serves both the guest and the manage
-  // link. Adds the trash action when the shared link has allowDelete; behaviour otherwise mirrors
-  // AlbumViewer and should be kept in sync with it.
+  // link. Adds the trash action and the settings link when the shared link has allowDelete (the
+  // manage link), and uploads through a fixed button instead of a control bar icon; behaviour
+  // otherwise mirrors AlbumViewer and should be kept in sync with it.
   // The markup intentionally diverges: it uses the Pixalery landing theme (`:root.theme-pixalery`
   // in app.css, toggled by ManageSharedLinkPage).
   import { shortcut } from '#lib/actions/shortcut.ts';
@@ -17,16 +18,18 @@
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
+  import { Route } from '#lib/route.ts';
   import { handleDownloadAlbum } from '#lib/services/album.service.ts';
   import { getGlobalActions } from '#lib/services/app.service.ts';
   import { dragAndDropFilesStore } from '#lib/stores/drag-and-drop-files.store.ts';
   import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
+  import { uploadAssetsStore } from '#lib/stores/upload.ts';
   import { handlePromiseError } from '#lib/utils.ts';
   import { fileUploadHandler, openFileUploadDialog } from '#lib/utils/file-uploader.ts';
   import type { AlbumResponseDto, SharedLinkResponseDto } from '@immich/sdk';
-  import { ActionButton, IconButton, Logo } from '@immich/ui';
-  import { mdiDownload, mdiFileImagePlusOutline, mdiPresentationPlay } from '@mdi/js';
+  import { ActionButton, Button, IconButton, Logo } from '@immich/ui';
+  import { mdiCogOutline, mdiDownload, mdiFileImagePlusOutline, mdiPresentationPlay } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import ControlAppBar from '../shared-components/ControlAppBar.svelte';
   import ThemeButton from '../shared-components/ThemeButton.svelte';
@@ -45,6 +48,11 @@
   let album = $state(sharedLink.album as AlbumResponseDto);
 
   let { slideshowState, slideshowNavigation } = slideshowStore;
+  // the upload panel takes the upload button's corner while it has anything to show
+  const { isUploading } = uploadAssetsStore;
+
+  // not a page of this app: the edge proxy redirects it to the album's settings on the landing site
+  const settingsHref = $derived(Route.sharedAlbumSettings({ key: sharedLink.key }));
 
   const options = $derived({ albumId: album.id, order: album.order });
   let timelineManager = $state<TimelineManager>() as TimelineManager;
@@ -120,6 +128,20 @@
 
 <SourceLink />
 
+{#if sharedLink.allowUpload && !assetMultiSelectManager.selectionActive && !$isUploading}
+  <div class="fixed inset-e-16 bottom-6 max-md:inset-e-4">
+    <Button
+      class="shadow-lg"
+      size="large"
+      shape="round"
+      leadingIcon={mdiFileImagePlusOutline}
+      onclick={() => openFileUploadDialog({ albumId: album.id })}
+    >
+      {$t('upload_photos')}
+    </Button>
+  </div>
+{/if}
+
 <header>
   {#if assetMultiSelectManager.selectionActive}
     <AssetSelectControlBar class={controlBarClass}>
@@ -141,17 +163,6 @@
 
       {#snippet trailing()}
         <ActionButton action={Cast} />
-
-        {#if sharedLink.allowUpload}
-          <IconButton
-            shape="round"
-            color="secondary"
-            variant="ghost"
-            aria-label={$t('add_photos')}
-            onclick={() => openFileUploadDialog({ albumId: album.id })}
-            icon={mdiFileImagePlusOutline}
-          />
-        {/if}
 
         {#if album.assetCount > 0 && sharedLink.allowDownload}
           <IconButton
@@ -175,6 +186,30 @@
           <AlbumMap {album} />
         {/if}
         <ThemeButton />
+        {#if sharedLink.allowDelete}
+          {#if mediaQueryManager.maxMd}
+            <IconButton
+              shape="round"
+              color="secondary"
+              variant="outline"
+              aria-label={$t('settings')}
+              href={settingsHref}
+              target="_blank"
+              icon={mdiCogOutline}
+            />
+          {:else}
+            <Button
+              shape="round"
+              color="secondary"
+              variant="outline"
+              leadingIcon={mdiCogOutline}
+              href={settingsHref}
+              target="_blank"
+            >
+              {$t('settings')}
+            </Button>
+          {/if}
+        {/if}
       {/snippet}
     </ControlAppBar>
   {/if}

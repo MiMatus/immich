@@ -2298,6 +2298,7 @@
   "upload_error_with_count": "Chyba pri nahrávaní {count, plural, one {# položky} few {# položiek} other {# položiek}}",
   "upload_errors": "Nahrávanie ukončené s {count, plural, one {# chybou} other {# chybami}}.",
   "upload_finished": "Nahrávanie dokončené",
+  "upload_photos": "Nahrať fotografie",
   "upload_progress": "Ostáva {remaining, number} - Spracovaných {processed, number}/{total, number}",
   "upload_skipped_duplicates": "{count, plural, one {Preskočená # duplicitná položka} few {Preskočené # duplicitné položky} other {Preskočených # duplicitných položiek}}",
   "upload_status_duplicates": "Duplikáty",

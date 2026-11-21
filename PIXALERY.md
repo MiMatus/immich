@@ -11,7 +11,9 @@ Modifications (see `git log v<upstream version>..pixalery-latest`):
   (`design/pixalery/`, `web/src/lib/brand.ts`, `mobile/lib/constants/constants.dart`).
 - **Shared links with `allowDelete`**: album shared links may allow visitors to move assets to the
   trash (`DELETE /assets?key=...`).
-- **`/shared-album/[key]` web page**: a Pixalery-themed shared album page with the trash action.
+- **`/shared-album/[key]` web page**: a Pixalery-themed shared album page with the trash action, a
+  fixed "Upload photos" button and, on a link with `allowDelete`, a Settings link to
+  `/shared-album/<key>/settings` (no page of the web app: the deployment's edge proxy redirects it).
 - **Build**: `server/Dockerfile` adjustments so the fork builds outside upstream CI.
 
 The web UI offers this source to every visitor of a shared link (the GitHub icon next to the
