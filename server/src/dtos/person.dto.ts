@@ -174,6 +174,31 @@ const AssetFaceResponseSchema = z
 
 export class AssetFaceResponseDto extends createZodDto(AssetFaceResponseSchema) {}
 
+const AlbumAssetFaceResponseSchema = AssetFaceResponseSchema.omit({ person: true })
+  .extend({ personId: z.uuidv4().nullable().describe('Person ID, references an item of `people`') })
+  .describe('Asset face referencing its person')
+  .meta({ id: 'AlbumAssetFaceResponseDto' });
+
+const AlbumAssetFacesResponseSchema = z
+  .object({
+    assetId: z.uuidv4().describe('Asset ID'),
+    faces: z.array(AlbumAssetFaceResponseSchema),
+  })
+  .describe('Faces of one album asset')
+  .meta({ id: 'AlbumAssetFacesResponseDto' });
+
+const AlbumFacesResponseSchema = z
+  .object({
+    people: z.array(PersonResponseSchema).describe('People recognised in the album'),
+    assets: z.array(AlbumAssetFacesResponseSchema).describe('Album assets with at least one face'),
+  })
+  .describe('Faces and people of an album')
+  .meta({ id: 'AlbumFacesResponseDto' });
+
+export class AlbumAssetFaceResponseDto extends createZodDto(AlbumAssetFaceResponseSchema) {}
+export class AlbumAssetFacesResponseDto extends createZodDto(AlbumAssetFacesResponseSchema) {}
+export class AlbumFacesResponseDto extends createZodDto(AlbumFacesResponseSchema) {}
+
 const AssetFaceUpdateItemSchema = z
   .object({
     personId: z.uuidv4().describe('Person ID'),
@@ -363,4 +388,13 @@ export function mapFaces(
     ...mapFacesWithoutPerson(face, edits, assetDimensions),
     person: face.person ? mapPerson(face.person) : null,
   };
+}
+
+export function mapAlbumFace(
+  face: MaybeDehydrated<Selectable<AssetFaceTable>>,
+  personId: string | null,
+  edits?: AssetEditActionItem[],
+  assetDimensions?: ImageDimensions,
+): AlbumAssetFaceResponseDto {
+  return { ...mapFacesWithoutPerson(face, edits, assetDimensions), personId };
 }

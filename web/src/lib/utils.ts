@@ -257,6 +257,10 @@ export const getProfileImageUrl = (user: UserResponseDto) =>
 export const getPeopleThumbnailUrl = (person: PersonResponseDto, updatedAt?: string) =>
   createUrl(getPeopleThumbnailPath(person.id), { updatedAt: updatedAt ?? person.updatedAt });
 
+// the person thumbnail route refuses shared links, this one serves the people of the link's album
+export const getAlbumFaceThumbnailUrl = (albumId: string, person: PersonResponseDto) =>
+  createUrl(`/albums/${albumId}/faces/${person.id}/thumbnail`, { ...authManager.params, updatedAt: person.updatedAt });
+
 export const copyToClipboard = async (secret: string | unknown) => {
   const $t = get(t);
 

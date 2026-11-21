@@ -1,16 +1,25 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto.js';
 import { AlbumUserRole, AssetOrder, UserMetadataKey } from 'src/enum.js';
 import { AlbumService } from 'src/services/album.service.js';
 import { AlbumUserFactory } from 'test/factories/album-user.factory.js';
 import { AlbumFactory } from 'test/factories/album.factory.js';
+import { AssetFaceFactory } from 'test/factories/asset-face.factory.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
 import { UserFactory } from 'test/factories/user.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
-import { getForAlbum } from 'test/mappers.js';
+import { getForAlbum, getForAssetFace } from 'test/mappers.js';
 import { newUuid } from 'test/small.factory.js';
 import { ServiceMocks, newTestService } from 'test/utils.js';
+
+const albumFaceRow = (face: ReturnType<AssetFaceFactory['build']>) => ({
+  ...getForAssetFace(face),
+  edits: [],
+  exifImageHeight: null,
+  exifImageWidth: null,
+  orientation: null,
+});
 
 describe(AlbumService.name, () => {
   let sut: AlbumService;
@@ -756,6 +765,126 @@ describe(AlbumService.name, () => {
         new Set(['album-123']),
         AlbumUserRole.Viewer,
       );
+    });
+  });
+
+  describe('getFaces', () => {
+    it('should require album.read access', async () => {
+      await expect(sut.getFaces(AuthFactory.create(), 'album-123')).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.person.getAlbumFaces).not.toHaveBeenCalled();
+    });
+
+    it('should group the faces by asset and reference each person once', async () => {
+      const auth = AuthFactory.create();
+      const assetId = newUuid();
+      const known = AssetFaceFactory.from({ assetId }).person({ name: 'Alice' }).build();
+      const again = AssetFaceFactory.from({ personGroupId: known.personGroupId }).build();
+      const unknown = AssetFaceFactory.create({ assetId });
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set(['album-123']));
+      mocks.person.getAlbumFaces.mockResolvedValue([
+        albumFaceRow(known),
+        albumFaceRow(unknown),
+        albumFaceRow({ ...again, person: known.person }),
+      ]);
+
+      const result = await sut.getFaces(auth, 'album-123');
+
+      expect(mocks.person.getAlbumFaces).toHaveBeenCalledWith('album-123', { viewingUserId: auth.user.id });
+      expect(result.people).toEqual([expect.objectContaining({ id: known.personGroupId, name: 'Alice' })]);
+      expect(result.assets).toEqual([
+        {
+          assetId,
+          faces: [
+            expect.objectContaining({ id: known.id, personId: known.personGroupId }),
+            expect.objectContaining({ id: unknown.id, personId: null }),
+          ],
+        },
+        { assetId: again.assetId, faces: [expect.objectContaining({ id: again.id, personId: known.personGroupId })] },
+      ]);
+    });
+
+    it('should hide hidden people and sharing details from a shared link', async () => {
+      const auth = AuthFactory.from().sharedLink({ showExif: true }).build();
+      const visible = AssetFaceFactory.from().person({ name: 'Alice' }).build();
+      const hidden = AssetFaceFactory.from().person({ name: 'Bob', isHidden: true }).build();
+      mocks.access.album.checkSharedLinkAccess.mockResolvedValue(new Set(['album-123']));
+      mocks.person.getAlbumFaces.mockResolvedValue([albumFaceRow(visible), albumFaceRow(hidden)]);
+
+      const result = await sut.getFaces(auth, 'album-123');
+
+      expect(result.people).toEqual([
+        expect.objectContaining({ id: visible.personGroupId, otherPeople: [], sharedBy: [], sharedWith: [] }),
+      ]);
+      expect(result.assets.flatMap(({ faces }) => faces)).toEqual([
+        expect.objectContaining({ id: visible.id, personId: visible.personGroupId }),
+        expect.objectContaining({ id: hidden.id, personId: null }),
+      ]);
+    });
+
+    it('should return nothing to a shared link that hides metadata', async () => {
+      const auth = AuthFactory.from().sharedLink({ showExif: false }).build();
+      mocks.access.album.checkSharedLinkAccess.mockResolvedValue(new Set(['album-123']));
+
+      await expect(sut.getFaces(auth, 'album-123')).resolves.toEqual({ people: [], assets: [] });
+
+      expect(mocks.person.getAlbumFaces).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getFaceThumbnail', () => {
+    it('should require album.read access', async () => {
+      await expect(sut.getFaceThumbnail(AuthFactory.create(), 'album-123', 'person-1')).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      expect(mocks.person.getAlbumPerson).not.toHaveBeenCalled();
+    });
+
+    it('should serve the thumbnail of a person in the album', async () => {
+      const auth = AuthFactory.from().sharedLink({ showExif: true }).build();
+      mocks.access.album.checkSharedLinkAccess.mockResolvedValue(new Set(['album-123']));
+      mocks.person.getAlbumPerson.mockResolvedValue({ personGroupId: 'person-1', isHidden: false });
+      mocks.person.getForThumbnail.mockResolvedValue({
+        thumbnailPath: '/thumbs/person-1.jpeg',
+        sharedThumbnailPath: null,
+      });
+
+      await expect(sut.getFaceThumbnail(auth, 'album-123', 'person-1')).resolves.toEqual(
+        expect.objectContaining({ path: '/thumbs/person-1.jpeg', contentType: 'image/jpeg' }),
+      );
+
+      expect(mocks.person.getAlbumPerson).toHaveBeenCalledWith('album-123', 'person-1', {
+        viewingUserId: auth.user.id,
+      });
+    });
+
+    it('should not find a person who is not in the album', async () => {
+      const auth = AuthFactory.create();
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set(['album-123']));
+
+      await expect(sut.getFaceThumbnail(auth, 'album-123', 'person-1')).rejects.toBeInstanceOf(NotFoundException);
+
+      expect(mocks.person.getForThumbnail).not.toHaveBeenCalled();
+    });
+
+    it('should not find a hidden person for a shared link', async () => {
+      const auth = AuthFactory.from().sharedLink({ showExif: true }).build();
+      mocks.access.album.checkSharedLinkAccess.mockResolvedValue(new Set(['album-123']));
+      mocks.person.getAlbumPerson.mockResolvedValue({ personGroupId: 'person-1', isHidden: true });
+
+      await expect(sut.getFaceThumbnail(auth, 'album-123', 'person-1')).rejects.toBeInstanceOf(NotFoundException);
+
+      expect(mocks.person.getForThumbnail).not.toHaveBeenCalled();
+    });
+
+    it('should not find anyone for a shared link that hides metadata', async () => {
+      const auth = AuthFactory.from().sharedLink({ showExif: false }).build();
+      mocks.access.album.checkSharedLinkAccess.mockResolvedValue(new Set(['album-123']));
+
+      await expect(sut.getFaceThumbnail(auth, 'album-123', 'person-1')).rejects.toBeInstanceOf(NotFoundException);
+
+      expect(mocks.person.getAlbumPerson).not.toHaveBeenCalled();
     });
   });
 

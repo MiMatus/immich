@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Copy of SharedLinkPage for the /shared-album/[key] route (guest and manage links): album links
+  // Copy of SharedLinkPage for the /shared-album/[slug] route (guest and manage links): album links
   // render ManageAlbumViewer, which adds the trash action for links with allowDelete. Behaviour is
   // kept in sync with SharedLinkPage; the markup intentionally diverges to use the Pixalery landing
   // theme (see `:root.theme-pixalery` in app.css).

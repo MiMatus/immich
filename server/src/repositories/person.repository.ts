@@ -20,7 +20,7 @@ import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table.js';
 import { PersonGroupTable } from 'src/schema/tables/person-group.table.js';
 import { PersonTable } from 'src/schema/tables/person.table.js';
-import { anyUuid, dummy, inSharedAlbum, removeUndefinedKeys, withFilePath } from 'src/utils/database.js';
+import { anyUuid, dummy, inSharedAlbum, removeUndefinedKeys, withEdits, withFilePath } from 'src/utils/database.js';
 import { isLeapDayObserved } from 'src/utils/date.js';
 import { paginationHelper, type PaginationOptions } from 'src/utils/pagination.js';
 
@@ -519,6 +519,50 @@ export class PersonRepository {
       .$if(isVisible !== undefined, (qb) => qb.where('asset_face.isVisible', '=', isVisible!))
       .orderBy('asset_face.boundingBoxX1', 'asc')
       .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, { viewingUserId: DummyValue.UUID }] })
+  getAlbumFaces(albumId: string, { viewingUserId }: WithPersonOptions) {
+    return this.db
+      .selectFrom('asset_face')
+      .innerJoin('album_asset', 'album_asset.assetId', 'asset_face.assetId')
+      .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+      .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
+      .selectAll('asset_face')
+      .select(withPerson({ viewingUserId }))
+      .select(['asset_exif.exifImageHeight', 'asset_exif.exifImageWidth', 'asset_exif.orientation'])
+      .select(withEdits)
+      .where('album_asset.albumId', '=', albumId)
+      .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', 'is', true)
+      .where('asset_face.assetVisibility', '=', sql.lit(AssetVisibility.Timeline))
+      .where('asset_face.assetDeletedAt', 'is', null)
+      .orderBy('asset_face.assetId', 'asc')
+      .orderBy('asset_face.boundingBoxX1', 'asc')
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, { viewingUserId: DummyValue.UUID }] })
+  getAlbumPerson(albumId: string, personGroupId: string, { viewingUserId }: WithPersonOptions) {
+    return this.db
+      .selectFrom('person')
+      .select(['person.personGroupId', 'person.isHidden'])
+      .where('person.personGroupId', '=', personGroupId)
+      .where('person.ownerId', '=', viewingUserId)
+      .where((eb) =>
+        eb.exists(
+          eb
+            .selectFrom('asset_face')
+            .innerJoin('album_asset', 'album_asset.assetId', 'asset_face.assetId')
+            .whereRef('asset_face.personGroupId', '=', 'person.personGroupId')
+            .where('album_asset.albumId', '=', albumId)
+            .where('asset_face.deletedAt', 'is', null)
+            .where('asset_face.isVisible', 'is', true)
+            .where('asset_face.assetVisibility', '=', sql.lit(AssetVisibility.Timeline))
+            .where('asset_face.assetDeletedAt', 'is', null),
+        ),
+      )
+      .executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { viewingUserId: DummyValue.UUID }] })

@@ -1,8 +1,24 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Next,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  Res,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import type { NextFunction, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
   AddUsersDto,
+  AlbumFaceParamDto,
   AlbumResponseDto,
   AlbumStatisticsResponseDto,
   AlbumUserParamDto,
@@ -16,15 +32,23 @@ import {
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
 import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { MapMarkerResponseDto } from 'src/dtos/map.dto.js';
+import { AlbumFacesResponseDto } from 'src/dtos/person.dto.js';
 import { ApiTag, Permission } from 'src/enum.js';
-import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
+import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { AlbumService } from 'src/services/album.service.js';
+import { sendFile } from 'src/utils/file.js';
 import { UUIDParamDto } from 'src/validation.js';
 
 @ApiTags(ApiTag.Albums)
 @Controller('albums')
 export class AlbumController {
-  constructor(private service: AlbumService) {}
+  constructor(
+    private service: AlbumService,
+    private logger: LoggingRepository,
+  ) {
+    this.logger.setContext(AlbumController.name);
+  }
 
   @Get()
   @Authenticated({ permission: Permission.AlbumRead })
@@ -108,6 +132,34 @@ export class AlbumController {
   })
   getAlbumMapMarkers(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<MapMarkerResponseDto[]> {
     return this.service.getMapMarkers(auth, id);
+  }
+
+  @Authenticated({ permission: Permission.AlbumRead, sharedLink: true })
+  @Get(':id/faces')
+  @Endpoint({
+    summary: 'Retrieve album faces',
+    description: 'Retrieve the detected faces and the recognised people of all assets in a specific album by its ID.',
+    history: new HistoryBuilder().added('v3'),
+  })
+  getAlbumFaces(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AlbumFacesResponseDto> {
+    return this.service.getFaces(auth, id);
+  }
+
+  @Authenticated({ permission: Permission.AlbumRead, sharedLink: true })
+  @Get(':id/faces/:personId/thumbnail')
+  @FileResponse()
+  @Endpoint({
+    summary: 'Get album face thumbnail',
+    description: 'Retrieve the thumbnail file of a person recognised in a specific album.',
+    history: new HistoryBuilder().added('v3'),
+  })
+  async getAlbumFaceThumbnail(
+    @Res() res: Response,
+    @Next() next: NextFunction,
+    @Auth() auth: AuthDto,
+    @Param() { id, personId }: AlbumFaceParamDto,
+  ) {
+    await sendFile(res, next, () => this.service.getFaceThumbnail(auth, id, personId), this.logger);
   }
 
   @Put(':id/assets')

@@ -34,7 +34,7 @@
 
     loading = true;
     try {
-      // the shared-link key travels as a query parameter; the server never hard-deletes for shared links
+      // the shared-link slug travels as a query parameter; the server never hard-deletes for shared links
       await deleteAssets({ ...authManager.params, assetBulkDeleteDto: { ids, force: false } });
       onAssetDelete(ids);
       toastManager.primary($t('assets_moved_to_trash_count', { values: { count: ids.length } }));

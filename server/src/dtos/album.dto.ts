@@ -191,6 +191,11 @@ export const AlbumResponseSchema = z
   })
   .meta({ id: 'AlbumResponseDto' });
 
+const AlbumFaceParamSchema = z.object({
+  id: z.uuidv4().describe('Album ID'),
+  personId: z.uuidv4().describe('Person ID'),
+});
+
 const AlbumUserParamSchema = z.object({
   id: z.uuidv4().describe('Album ID'),
   // TODO: disallow 'me' as a shortcut in v4 and type userId as uuidv4
@@ -203,6 +208,7 @@ const AlbumUserParamSchema = z.object({
     .meta(new HistoryBuilder().updated('v3', '"me" as a value is deprecated').getExtensions()),
 });
 
+export class AlbumFaceParamDto extends createZodDto(AlbumFaceParamSchema) {}
 export class AlbumUserParamDto extends createZodDto(AlbumUserParamSchema) {}
 export class AddUsersDto extends createZodDto(AddUsersSchema) {}
 export class AlbumUserCreateDto extends createZodDto(AlbumUserCreateSchema) {}

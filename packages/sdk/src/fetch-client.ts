@@ -962,6 +962,80 @@ export type BulkIdResponseDto = {
     /** Whether operation succeeded */
     success: boolean;
 };
+export type AlbumAssetFaceResponseDto = {
+    /** Bounding box X1 coordinate */
+    boundingBoxX1: number;
+    /** Bounding box X2 coordinate */
+    boundingBoxX2: number;
+    /** Bounding box Y1 coordinate */
+    boundingBoxY1: number;
+    /** Bounding box Y2 coordinate */
+    boundingBoxY2: number;
+    /** Face ID */
+    id: string;
+    /** Image height in pixels */
+    imageHeight: number;
+    /** Image width in pixels */
+    imageWidth: number;
+    /** Person ID, references an item of `people` */
+    personId: string | null;
+    sourceType?: SourceType;
+};
+export type AlbumAssetFacesResponseDto = {
+    /** Asset ID */
+    assetId: string;
+    faces: AlbumAssetFaceResponseDto[];
+};
+export type PersonOtherResponseDto = {
+    birthDate: string | null;
+    name: string;
+    role: PersonUserRole;
+    sharedById: string;
+};
+export type PeopleUserResponseDto = {
+    avatarColor: UserAvatarColor;
+    /** User email */
+    email: string;
+    /** User ID */
+    id: string;
+    /** User name */
+    name: string;
+    /** Profile change date */
+    profileChangedAt: string;
+    /** Profile image path */
+    profileImagePath: string;
+    /** Access role */
+    role: PersonUserRole;
+};
+export type PersonResponseDto = {
+    /** Person date of birth */
+    birthDate: string | null;
+    /** Person color (hex) */
+    color?: string;
+    /** Person ID */
+    id: string;
+    /** Is favorite */
+    isFavorite?: boolean;
+    /** Is hidden */
+    isHidden: boolean;
+    /** Person name */
+    name: string;
+    otherPeople: PersonOtherResponseDto[];
+    /** Users that gave the current user access to this person */
+    sharedBy: PeopleUserResponseDto[];
+    /** Users the current user gave access to this person */
+    sharedWith: PeopleUserResponseDto[];
+    /** Thumbnail path */
+    thumbnailPath: string;
+    /** Last update date */
+    updatedAt?: string;
+};
+export type AlbumFacesResponseDto = {
+    /** Album assets with at least one face */
+    assets: AlbumAssetFacesResponseDto[];
+    /** People recognised in the album */
+    people: PersonResponseDto[];
+};
 export type MapMarkerResponseDto = {
     /** City name */
     city: string | null;
@@ -1234,50 +1308,6 @@ export type ExifResponseDto = {
     state?: string | null;
     /** Time zone */
     timeZone?: string | null;
-};
-export type PersonOtherResponseDto = {
-    birthDate: string | null;
-    name: string;
-    role: PersonUserRole;
-    sharedById: string;
-};
-export type PeopleUserResponseDto = {
-    avatarColor: UserAvatarColor;
-    /** User email */
-    email: string;
-    /** User ID */
-    id: string;
-    /** User name */
-    name: string;
-    /** Profile change date */
-    profileChangedAt: string;
-    /** Profile image path */
-    profileImagePath: string;
-    /** Access role */
-    role: PersonUserRole;
-};
-export type PersonResponseDto = {
-    /** Person date of birth */
-    birthDate: string | null;
-    /** Person color (hex) */
-    color?: string;
-    /** Person ID */
-    id: string;
-    /** Is favorite */
-    isFavorite?: boolean;
-    /** Is hidden */
-    isHidden: boolean;
-    /** Person name */
-    name: string;
-    otherPeople: PersonOtherResponseDto[];
-    /** Users that gave the current user access to this person */
-    sharedBy: PeopleUserResponseDto[];
-    /** Users the current user gave access to this person */
-    sharedWith: PeopleUserResponseDto[];
-    /** Thumbnail path */
-    thumbnailPath: string;
-    /** Last update date */
-    updatedAt?: string;
 };
 export type AssetStackResponseDto = {
     /** Number of assets in stack */
@@ -4600,6 +4630,43 @@ export function addAssetsToAlbum({ id, bulkIdsDto }: {
         method: "PUT",
         body: bulkIdsDto
     })));
+}
+/**
+ * Retrieve album faces
+ */
+export function getAlbumFaces({ id, key, slug }: {
+    id: string;
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AlbumFacesResponseDto;
+    }>(`/albums/${encodeURIComponent(id)}/faces${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Get album face thumbnail
+ */
+export function getAlbumFaceThumbnail({ id, key, personId, slug }: {
+    id: string;
+    key?: string;
+    personId: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/albums/${encodeURIComponent(id)}/faces/${encodeURIComponent(personId)}/thumbnail${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts
+    }));
 }
 /**
  * Retrieve album map markers
@@ -8326,6 +8393,16 @@ export enum BulkIdErrorReason {
     Unknown = "unknown",
     Validation = "validation"
 }
+export enum SourceType {
+    MachineLearning = "machine-learning",
+    Exif = "exif",
+    Manual = "manual"
+}
+export enum PersonUserRole {
+    Read = "read",
+    Write = "write",
+    Admin = "admin"
+}
 export enum Permission {
     All = "all",
     ActivityCreate = "activity.create",
@@ -8525,11 +8602,6 @@ export enum AssetJobName {
     RegenerateThumbnail = "regenerate-thumbnail",
     TranscodeVideo = "transcode-video"
 }
-export enum PersonUserRole {
-    Read = "read",
-    Write = "write",
-    Admin = "admin"
-}
 export enum AssetTypeEnum {
     Image = "IMAGE",
     Video = "VIDEO",
@@ -8550,11 +8622,6 @@ export enum AssetMediaSize {
     Fullsize = "fullsize",
     Preview = "preview",
     Thumbnail = "thumbnail"
-}
-export enum SourceType {
-    MachineLearning = "machine-learning",
-    Exif = "exif",
-    Manual = "manual"
 }
 export enum ManualJobName {
     PersonCleanup = "person-cleanup",

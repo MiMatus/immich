@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import {
   AddUsersDto,
   AlbumResponseDto,
@@ -15,11 +15,20 @@ import {
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
 import { AuthDto, isMetadataHidden } from 'src/dtos/auth.dto.js';
 import { MapMarkerResponseDto } from 'src/dtos/map.dto.js';
-import { AlbumUserRole, Permission } from 'src/enum.js';
+import {
+  AlbumAssetFaceResponseDto,
+  AlbumFacesResponseDto,
+  PersonResponseDto,
+  mapAlbumFace,
+  mapPerson,
+} from 'src/dtos/person.dto.js';
+import { AlbumUserRole, CacheControl, Permission } from 'src/enum.js';
 import { AlbumAssetCount } from 'src/repositories/album.repository.js';
 import { BaseService } from 'src/services/base.service.js';
-import { addAssets, removeAssets } from 'src/utils/asset.util.js';
+import { addAssets, getDimensions, removeAssets } from 'src/utils/asset.util.js';
 import { asDateTimeString } from 'src/utils/date.js';
+import { ImmichFileResponse } from 'src/utils/file.js';
+import { mimeTypes } from 'src/utils/mime-types.js';
 import { findOrFail } from 'src/utils/misc.js';
 import { getPreferences } from 'src/utils/preferences.js';
 
@@ -97,6 +106,65 @@ export class AlbumService extends BaseService {
     }
 
     return this.mapRepository.getAlbumMapMarkers(id);
+  }
+
+  async getFaces(auth: AuthDto, id: string): Promise<AlbumFacesResponseDto> {
+    await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [id] });
+
+    if (isMetadataHidden(auth)) {
+      return { people: [], assets: [] };
+    }
+
+    const faces = await this.personRepository.getAlbumFaces(id, { viewingUserId: auth.user.id });
+    const isGuest = !!auth.sharedLink;
+    const people = new Map<string, PersonResponseDto>();
+    const assets = new Map<string, AlbumAssetFaceResponseDto[]>();
+
+    for (const { person, edits, exifImageHeight, exifImageWidth, orientation, ...face } of faces) {
+      let personId: string | null = null;
+      // a shared link sees the owner's people, without the hidden ones and without who they are shared with
+      if (person && !(isGuest && person.isHidden)) {
+        personId = person.personGroupId;
+        if (!people.has(personId)) {
+          const dto = mapPerson(person);
+          people.set(personId, isGuest ? { ...dto, otherPeople: [], sharedBy: [], sharedWith: [] } : dto);
+        }
+      }
+
+      const dimensions = getDimensions({ exifImageHeight, exifImageWidth, orientation });
+      const assetFaces = assets.get(face.assetId) ?? [];
+      assetFaces.push(mapAlbumFace(face, personId, edits, dimensions));
+      assets.set(face.assetId, assetFaces);
+    }
+
+    return {
+      people: people.values().toArray(),
+      assets: Array.from(assets, ([assetId, faces]) => ({ assetId, faces })),
+    };
+  }
+
+  async getFaceThumbnail(auth: AuthDto, id: string, personGroupId: string): Promise<ImmichFileResponse> {
+    await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [id] });
+
+    // the same people getFaces returns: in this album, and for a shared link not hidden
+    const person = isMetadataHidden(auth)
+      ? undefined
+      : await this.personRepository.getAlbumPerson(id, personGroupId, { viewingUserId: auth.user.id });
+    if (!person || (auth.sharedLink && person.isHidden)) {
+      throw new NotFoundException();
+    }
+
+    const personGroup = await this.personRepository.getForThumbnail({ ownerId: auth.user.id, personGroupId });
+    const thumbnailPath = personGroup?.thumbnailPath || personGroup?.sharedThumbnailPath;
+    if (!thumbnailPath) {
+      throw new NotFoundException();
+    }
+
+    return new ImmichFileResponse({
+      path: thumbnailPath,
+      contentType: mimeTypes.lookup(thumbnailPath),
+      cacheControl: CacheControl.PrivateWithoutCache,
+    });
   }
 
   async create(auth: AuthDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {

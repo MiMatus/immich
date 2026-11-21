@@ -11,6 +11,7 @@ import {
   addUsersToAlbum,
   createAlbum,
   deleteAlbum,
+  getAlbumFaces,
   getAlbumInfo,
   getAlbumMapMarkers,
   getAlbumStatistics,
@@ -19,9 +20,11 @@ import {
   removeUserFromAlbum,
   updateAlbumInfo,
   updateAlbumUser,
+  type AlbumFacesResponseDto,
   type AlbumResponseDto,
   type AlbumsAddAssetsResponseDto,
   type BulkIdResponseDto,
+  type PersonResponseDto,
 } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
 import { mutationOptions, queryOptions, type MutationMeta } from '@tanstack/svelte-query';
@@ -91,6 +94,35 @@ export const getAlbumMapMarkersQuery = (id: string) =>
     queryKey: ['album', id, 'map-markers'],
     queryFn: ({ signal }) => getAlbumMapMarkers({ ...authManager.params, id }, { signal }),
   });
+
+export type AlbumPerson = { person: PersonResponseDto; assetCount: number };
+
+/** the people of an album with the number of its assets each of them is in, most frequent first */
+const toAlbumPeople = ({ people, assets }: AlbumFacesResponseDto): AlbumPerson[] => {
+  const counts = new Map<string, number>();
+  for (const { faces } of assets) {
+    for (const personId of new Set(faces.map((face) => face.personId))) {
+      if (personId) {
+        counts.set(personId, (counts.get(personId) ?? 0) + 1);
+      }
+    }
+  }
+
+  return people
+    .map((person) => ({ person, assetCount: counts.get(person.id) ?? 0 }))
+    .filter(({ assetCount }) => assetCount > 0)
+    .sort((a, b) => b.assetCount - a.assetCount);
+};
+
+export const getAlbumPeopleQuery = (id: string) =>
+  queryOptions({
+    queryKey: ['album', id, 'faces'],
+    queryFn: ({ signal }) => getAlbumFaces({ ...authManager.params, id }, { signal }),
+    select: toAlbumPeople,
+  });
+
+export const invalidateAlbumPeople = (id: string) =>
+  queryClient.invalidateQueries({ queryKey: ['album', id, 'faces'] });
 
 export const invalidateAlbums = () => queryClient.invalidateQueries({ queryKey: albumsQueryKey });
 

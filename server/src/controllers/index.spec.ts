@@ -48,6 +48,8 @@ const SHARED_LINK_ROUTES = new Set([
   'DELETE assets',
   'DELETE assets/:id/video/stream/:sessionId',
   'GET albums/:id',
+  'GET albums/:id/faces',
+  'GET albums/:id/faces/:personId/thumbnail',
   'GET albums/:id/map-markers',
   'GET assets/:id',
   'GET assets/:id/original',

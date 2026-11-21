@@ -9,6 +9,7 @@ import {
   ReactionType,
   type ActivityResponseDto,
   type AdminConfigDto,
+  type AlbumFacesResponseDto,
   type AlbumResponseDto,
   type AssetBulkUpdateDto,
   type AssetOcrResponseDto,
@@ -37,6 +38,7 @@ import {
 
 export type TimelineFilter = {
   albumId?: string;
+  personId?: string;
   isFavorite?: boolean;
   isTrashed?: boolean;
   visibility?: AssetVisibility;
@@ -168,6 +170,7 @@ export class MockData {
       .filter(
         (asset) =>
           (members === undefined || members.has(asset.id)) &&
+          (filter.personId === undefined || asset.people?.some(({ id }) => id === filter.personId)) &&
           (filter.visibility === undefined
             ? !hiddenVisibilities.has(asset.visibility)
             : asset.visibility === filter.visibility) &&
@@ -432,6 +435,28 @@ export class MockData {
       this.ocr.set(result.assetId, [...existing, result]);
     }
     return this;
+  }
+
+  albumFaces(albumId: string): AlbumFacesResponseDto {
+    const people = new Map<string, PersonResponseDto>();
+    const assets = this.timelineAssets({ albumId }).map((asset) => ({
+      assetId: asset.id,
+      faces: (asset.people ?? []).map((person, index) => {
+        people.set(person.id, { ...person, otherPeople: [], sharedBy: [], sharedWith: [] });
+        return {
+          id: `${asset.id}-${index}`,
+          personId: person.id,
+          imageWidth: 100,
+          imageHeight: 100,
+          boundingBoxX1: 0,
+          boundingBoxX2: 10,
+          boundingBoxY1: 0,
+          boundingBoxY2: 10,
+        };
+      }),
+    }));
+
+    return { people: [...people.values()], assets: assets.filter(({ faces }) => faces.length > 0) };
   }
 
   mapMarkers(albumId?: string): MapMarkerResponseDto[] {

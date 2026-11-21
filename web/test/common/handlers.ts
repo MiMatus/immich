@@ -115,6 +115,11 @@ export const createHandlers = (data: MockData): Handlers => {
       return { status: 204 };
     },
     getAlbumMapMarkers: ({ params }) => ({ json: data.mapMarkers(params.id) }),
+    getAlbumFaces: ({ params }) => ({ json: data.albumFaces(params.id) }),
+    getAlbumFaceThumbnail: ({ params }) => ({
+      body: placeholderImage(undefined, params.personId),
+      contentType: 'image/svg+xml',
+    }),
     getAlbumInfo: ({ params }) => {
       const album = data.getAlbum(params.id);
       return album ? { json: album } : notFound;

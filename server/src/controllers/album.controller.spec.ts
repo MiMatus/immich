@@ -35,4 +35,31 @@ describe(AlbumController.name, () => {
       expect(body).toEqual(factory.responses.validationError([{ path: ['assetId'], message: 'Invalid UUID' }]));
     });
   });
+
+  describe('GET /albums/:id/faces', () => {
+    it('should reject an invalid album id', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).get('/albums/invalid/faces');
+      expect(status).toEqual(400);
+      expect(body).toEqual(factory.responses.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
+      expect(service.getFaces).not.toHaveBeenCalled();
+    });
+
+    it('should return the album faces', async () => {
+      service.getFaces.mockResolvedValue({ people: [], assets: [] });
+      const { status, body } = await request(ctx.getHttpServer()).get(`/albums/${factory.uuid()}/faces`);
+      expect(status).toEqual(200);
+      expect(body).toEqual({ people: [], assets: [] });
+    });
+  });
+
+  describe('GET /albums/:id/faces/:personId/thumbnail', () => {
+    it('should reject an invalid person id', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).get(
+        `/albums/${factory.uuid()}/faces/invalid/thumbnail`,
+      );
+      expect(status).toEqual(400);
+      expect(body).toEqual(factory.responses.validationError([{ path: ['personId'], message: 'Invalid UUID' }]));
+      expect(service.getFaceThumbnail).not.toHaveBeenCalled();
+    });
+  });
 });

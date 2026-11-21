@@ -25,14 +25,16 @@ describe('Route', () => {
   });
 
   describe(Route.sharedAlbum.name, () => {
-    it('should build the shared album url for a key', () => {
-      expect(Route.sharedAlbum({ key: 'uuid-key' })).toBe('/shared-album/uuid-key');
+    it('should build the shared album url for a slug', () => {
+      expect(Route.sharedAlbum({ slug: 'wedding-x7k2p9qd4m1c' })).toBe('/shared-album/wedding-x7k2p9qd4m1c');
     });
   });
 
   describe(Route.sharedAlbumSettings.name, () => {
-    it('should build the shared album settings url for a key', () => {
-      expect(Route.sharedAlbumSettings({ key: 'uuid-key' })).toBe('/shared-album/uuid-key/settings');
+    it('should build the shared album settings url for a slug', () => {
+      expect(Route.sharedAlbumSettings({ slug: 'wedding-x7k2p9qd4m1c' })).toBe(
+        '/shared-album/wedding-x7k2p9qd4m1c/settings',
+      );
     });
   });
 

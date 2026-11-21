@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Copy of AlbumViewer for the /shared-album/[key] route, which serves both the guest and the manage
+  // Copy of AlbumViewer for the /shared-album/[slug] route, which serves both the guest and the manage
   // link. Adds the trash action and the settings link when the shared link has allowDelete (the
   // manage link), and uploads through a fixed button instead of a control bar icon; behaviour
   // otherwise mirrors AlbumViewer and should be kept in sync with it.
@@ -7,6 +7,7 @@
   // in app.css, toggled by ManageSharedLinkPage).
   import { shortcut } from '#lib/actions/shortcut.ts';
   import AlbumMap from '#lib/components/album-page/AlbumMap.svelte';
+  import AlbumPeopleFilter from '#lib/components/album-page/AlbumPeopleFilter.svelte';
   import ManageTrashAssetsAction from '#lib/components/album-page/ManageTrashAssetsAction.svelte';
   import SourceLink from '#lib/components/shared-components/SourceLink.svelte';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
@@ -16,6 +17,7 @@
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import { invalidateAlbumPeople } from '#lib/queries/album.query.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
   import { Route } from '#lib/route.ts';
@@ -52,9 +54,13 @@
   const { isUploading } = uploadAssetsStore;
 
   // not a page of this app: the edge proxy redirects it to the album's settings on the landing site
-  const settingsHref = $derived(Route.sharedAlbumSettings({ key: sharedLink.key }));
+  const settingsHref = $derived(Route.sharedAlbumSettings({ slug: sharedLink.slug ?? '' }));
 
-  const options = $derived({ albumId: album.id, order: album.order });
+  // the manage link can narrow the album down to one person
+  const canFilterPeople = $derived(sharedLink.allowDelete && sharedLink.showMetadata);
+  let personId = $state<string>();
+
+  const options = $derived({ albumId: album.id, order: album.order, ...(personId && { personId }) });
   let timelineManager = $state<TimelineManager>() as TimelineManager;
 
   dragAndDropFilesStore.subscribe((value) => {
@@ -87,6 +93,9 @@
     timelineManager.removeAssets(ids);
     album.assetCount = Math.max(0, album.assetCount - ids.length);
     assetMultiSelectManager.clear();
+    if (canFilterPeople) {
+      handlePromiseError(invalidateAlbumPeople(album.id));
+    }
   };
 </script>
 
@@ -121,6 +130,10 @@
         <p class="mt-6 mb-12 w-full max-w-3xl pb-2 text-start text-lg leading-[1.4] whitespace-pre-line text-muted">
           {album.description}
         </p>
+      {/if}
+
+      {#if canFilterPeople && album.assetCount > 0}
+        <AlbumPeopleFilter albumId={album.id} assetCount={album.assetCount} bind:personId />
       {/if}
     </section>
   </Timeline>

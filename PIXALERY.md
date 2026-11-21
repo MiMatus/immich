@@ -11,9 +11,15 @@ Modifications (see `git log v<upstream version>..pixalery-latest`):
   (`design/pixalery/`, `web/src/lib/brand.ts`, `mobile/lib/constants/constants.dart`).
 - **Shared links with `allowDelete`**: album shared links may allow visitors to move assets to the
   trash (`DELETE /assets?key=...`).
-- **`/shared-album/[key]` web page**: a Pixalery-themed shared album page with the trash action, a
+- **Album faces**: `GET /albums/:id/faces` returns the detected faces of all album assets and the
+  recognised people in one call. A shared link may call it and sees the owner's people, without
+  the hidden ones (nothing at all when the link hides metadata).
+  `GET /albums/:id/faces/:personId/thumbnail` serves the face thumbnail of one of those people,
+  since `/people/:id/thumbnail` refuses shared links.
+- **`/shared-album/[slug]` web page**: a Pixalery-themed shared album page with the trash action, a
   fixed "Upload photos" button and, on a link with `allowDelete`, a Settings link to
-  `/shared-album/<key>/settings` (no page of the web app: the deployment's edge proxy redirects it).
+  `/shared-album/<slug>/settings` (no page of the web app: the deployment's edge proxy redirects it)
+  and a people row (`AlbumPeopleFilter`) that narrows the album down to one person.
 - **Build**: `server/Dockerfile` adjustments so the fork builds outside upstream CI.
 
 The web UI offers this source to every visitor of a shared link (the GitHub icon next to the

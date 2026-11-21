@@ -672,6 +672,145 @@ where
 order by
   "asset_face"."boundingBoxX1" asc
 
+-- PersonRepository.getAlbumFaces
+select
+  "asset_face".*,
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "person".*,
+          (
+            select
+              coalesce(json_agg(agg), '[]')
+            from
+              (
+                select
+                  "person_user"."sharedById",
+                  "person_user"."role",
+                  "other"."name",
+                  "other"."birthDate"
+                from
+                  "person" as "other"
+                  inner join "person_user" on "person_user"."personGroupId" = "other"."personGroupId"
+                  and "person_user"."sharedById" = "other"."ownerId"
+                  and "person_user"."sharedWithId" = $1
+                where
+                  "other"."personGroupId" = "person"."personGroupId"
+              ) as agg
+          ) as "otherPeople",
+          (
+            select
+              coalesce(json_agg(agg), '[]')
+            from
+              (
+                select
+                  "id",
+                  "name",
+                  "email",
+                  "avatarColor",
+                  "profileImagePath",
+                  "profileChangedAt",
+                  "person_user"."role"
+                from
+                  "person_user"
+                  inner join "user" on "user"."id" = "person_user"."sharedById"
+                  and "user"."deletedAt" is null
+                where
+                  "person_user"."personGroupId" = "person"."personGroupId"
+                  and "person_user"."sharedWithId" = $2
+                order by
+                  "user"."name"
+              ) as agg
+          ) as "sharedBy",
+          (
+            select
+              coalesce(json_agg(agg), '[]')
+            from
+              (
+                select
+                  "id",
+                  "name",
+                  "email",
+                  "avatarColor",
+                  "profileImagePath",
+                  "profileChangedAt",
+                  "person_user"."role"
+                from
+                  "person_user"
+                  inner join "user" on "user"."id" = "person_user"."sharedWithId"
+                  and "user"."deletedAt" is null
+                where
+                  "person_user"."personGroupId" = "person"."personGroupId"
+                  and "person_user"."sharedById" = $3
+                order by
+                  "user"."name"
+              ) as agg
+          ) as "sharedWith"
+        from
+          "person"
+        where
+          "person"."personGroupId" = "asset_face"."personGroupId"
+          and "person"."ownerId" = $4
+      ) as obj
+  ) as "person",
+  "asset_exif"."exifImageHeight",
+  "asset_exif"."exifImageWidth",
+  "asset_exif"."orientation",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_edit"."action",
+          "asset_edit"."parameters"
+        from
+          "asset_edit"
+        where
+          "asset_edit"."assetId" = "asset"."id"
+      ) as agg
+  ) as "edits"
+from
+  "asset_face"
+  inner join "album_asset" on "album_asset"."assetId" = "asset_face"."assetId"
+  inner join "asset" on "asset"."id" = "asset_face"."assetId"
+  left join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+where
+  "album_asset"."albumId" = $5
+  and "asset_face"."deletedAt" is null
+  and "asset_face"."isVisible" is true
+  and "asset_face"."assetVisibility" = 'timeline'
+  and "asset_face"."assetDeletedAt" is null
+order by
+  "asset_face"."assetId" asc,
+  "asset_face"."boundingBoxX1" asc
+
+-- PersonRepository.getAlbumPerson
+select
+  "person"."personGroupId",
+  "person"."isHidden"
+from
+  "person"
+where
+  "person"."personGroupId" = $1
+  and "person"."ownerId" = $2
+  and exists (
+    select
+    from
+      "asset_face"
+      inner join "album_asset" on "album_asset"."assetId" = "asset_face"."assetId"
+    where
+      "asset_face"."personGroupId" = "person"."personGroupId"
+      and "album_asset"."albumId" = $3
+      and "asset_face"."deletedAt" is null
+      and "asset_face"."isVisible" is true
+      and "asset_face"."assetVisibility" = 'timeline'
+      and "asset_face"."assetDeletedAt" is null
+  )
+
 -- PersonRepository.getFaceById
 select
   "asset_face".*,

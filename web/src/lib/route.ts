@@ -113,8 +113,8 @@ export const Route = {
   editSharedLink: ({ id }: { id: string }) => `/shared-links/${id}/edit`,
   viewSharedLink: ({ slug, key }: { slug?: string | null; key: string }) =>
     slug ? `/s/${encodeURIComponent(slug)}` : `/share/${key}`,
-  sharedAlbum: ({ key }: { key: string }) => `/shared-album/${key}`,
-  sharedAlbumSettings: ({ key }: { key: string }) => `/shared-album/${key}/settings`,
+  sharedAlbum: ({ slug }: { slug: string }) => `/shared-album/${encodeURIComponent(slug)}`,
+  sharedAlbumSettings: ({ slug }: { slug: string }) => `/shared-album/${encodeURIComponent(slug)}/settings`,
 
   // settings
   userSettings: (params?: { isOpen?: OpenQueryParam }) => '/user-settings' + asQueryString(params),
